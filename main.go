@@ -4,6 +4,10 @@ import (
   "fmt"
   "log"
   "net/http"
+  "database/sql"
+  _ "github.com/mattn/go-sqlite3"
+  
+  
 )
 
 
@@ -32,12 +36,25 @@ func formHandler(w http.ResponseWriter, r *http.Request)  {
   lastname := r.FormValue("lname")
   email := r.FormValue("email")
 
-  fmt.Fprintf(w, "First Name = %s\n", firstname)
+  fmt.Fprintf(w, firstname)
   fmt.Fprintf(w, "Last Name = %s\n", lastname)
   fmt.Fprintf(w, "email = %s\n", email)
 
 
 
+}
+
+
+func addUsers(db *sql.DB, first_name string, last_name string, email string) {
+  records := `INSERT INTO people(first_name, lastname, email) VALUES (?, ?, ?)`
+  query, err := db.Prepare(records)
+  if err != nil {
+    log.Fatal(err)
+  }
+  _, err = query.Exec(first_name, last_name, email)
+  if err != nil {
+    log.Fatal(err)
+  }
 }
 
 
@@ -50,15 +67,22 @@ func formHandler(w http.ResponseWriter, r *http.Request)  {
 
 
 
-
-
-
-
 func main()  {
-  http.HandleFunc("/form", formHandler)
+
+//SQLlite3 information and variables
+  // db, err := sql.Open("sqlite3", "./names.db")
+  // checkErr(err)
+
+
+
+
+
+
+//webserver part
   fileserver := http.FileServer(http.Dir("./static"))
   http.Handle("/", fileserver) // handler dat de variable fileserver gebruikt om de paginas uit de folder /static aan te bieden
   http.HandleFunc("/hello", helloHandler) // hier komt de functie die reageert op /hello. inclusief de error handling wanner het niet over GET of de juiste URL gaat
+  http.HandleFunc("/form", formHandler)
 
 
 
